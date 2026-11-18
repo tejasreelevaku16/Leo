@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,11 +8,22 @@
 </head>
 <body>
     <main class="auth-container">
-        <h1>Welcome to LEO</h1>
-        <p>Your personal AI assistant.</p>
-
-        <a class="auth-button" href="login.html">Login</a>
-        <a class="auth-button" href="signup.html">Create Account</a>
+        <section class="auth-card" style="text-align: center;">
+            <div class="auth-brand">
+                <div class="auth-logo">L</div>
+                <h1>LEO</h1>
+            </div>
+            <div class="auth-heading">
+                <h2>Welcome to LEO</h2>
+                <p>Your personal AI assistant.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
+                <a class="auth-button" href="login.html">Log in</a>
+                <a class="auth-button" href="signup.html" style="background: transparent; color: #ffffff; border: 1px solid #454545;">Create account</a>
+            </div>
+            <p class="auth-footer">LEO AI Assistant</p>
+        </section>
     </main>
+    <script src="auth.js"></script>
 </body>
 </html>

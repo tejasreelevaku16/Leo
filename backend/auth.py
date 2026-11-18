@@ -6,13 +6,17 @@ import hashlib
 
 from datetime import datetime, timedelta, timezone
 
+from pathlib import Path
+
 from fastapi import (
     APIRouter,
     Depends,
     HTTPException,
     Request,
     Response,
-    status
+    status,
+    UploadFile,
+    File
 )
 
 from pydantic import BaseModel, Field
@@ -42,6 +46,33 @@ IS_PRODUCTION = os.getenv("LEO_ENV", "development").lower() == "production"
 
 COOKIE_SECURE = IS_PRODUCTION
 COOKIE_SAMESITE = "none" if IS_PRODUCTION else "lax"
+
+MAX_PROFILE_PIC_SIZE = 5 * 1024 * 1024  # 5 MB
+PROFILE_UPLOAD_DIR = Path("uploads/profile_pictures")
+PROFILE_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def validate_image_content(data: bytes) -> str | None:
+    """
+    Validate magic bytes for safe image formats (JPEG, PNG, WebP).
+    Returns file extension if valid ('jpg', 'png', 'webp'), else None.
+    """
+    if len(data) < 12:
+        return None
+
+    # JPEG: \xff\xd8\xff
+    if data[:3] == b"\xff\xd8\xff":
+        return "jpg"
+
+    # PNG: \x89PNG\r\n\x1a\n
+    if data[:8] == b"\x89PNG\r\n\x1a\n":
+        return "png"
+
+    # WebP: RIFF....WEBP
+    if data[:4] == b"RIFF" and data[8:12] == b"WEBP":
+        return "webp"
+
+    return None
 
 
 # -------------------------
@@ -263,7 +294,8 @@ def login_user(
         "user": {
             "id": user.id,
             "full_name": user.full_name,
-            "email": user.email
+            "email": user.email,
+            "profile_picture": user.profile_picture
         }
     }
 
@@ -282,8 +314,110 @@ def get_logged_in_user(
         "user": {
             "id": current_user.id,
             "full_name": current_user.full_name,
-            "email": current_user.email
+            "email": current_user.email,
+            "profile_picture": current_user.profile_picture
         }
+    }
+
+
+# -------------------------
+# PROFILE INFORMATION
+# -------------------------
+
+@router.get("/profile")
+def get_user_profile(
+    current_user: User = Depends(get_current_user)
+):
+
+    return {
+        "status": "success",
+        "user": {
+            "id": current_user.id,
+            "full_name": current_user.full_name,
+            "email": current_user.email,
+            "profile_picture": current_user.profile_picture,
+            "created_at": current_user.created_at.isoformat() if current_user.created_at else None
+        }
+    }
+
+
+# -------------------------
+# PROFILE PICTURE MANAGEMENT
+# -------------------------
+
+@router.post("/profile-picture")
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    content = await file.read()
+
+    if len(content) > MAX_PROFILE_PIC_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail="Profile picture size exceeds maximum allowed limit of 5MB."
+        )
+
+    ext = validate_image_content(content)
+    if not ext:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid image format. Only genuine JPEG, PNG, and WebP images are allowed."
+        )
+
+    # Clean up old profile picture from disk if it exists
+    if current_user.profile_picture:
+        old_filename = Path(current_user.profile_picture).name
+        old_file_path = PROFILE_UPLOAD_DIR / old_filename
+        try:
+            if old_file_path.is_file():
+                old_file_path.unlink()
+        except Exception:
+            pass
+
+    # Generate safe unique filename
+    filename = f"avatar_{current_user.id}_{secrets.token_hex(8)}.{ext}"
+    safe_file_path = PROFILE_UPLOAD_DIR / filename
+
+    with open(safe_file_path, "wb") as f:
+        f.write(content)
+
+    relative_url = f"/uploads/profile_pictures/{filename}"
+    current_user.profile_picture = relative_url
+    db.commit()
+    db.refresh(current_user)
+
+    return {
+        "status": "success",
+        "message": "Profile picture updated successfully.",
+        "profile_picture": relative_url
+    }
+
+
+@router.delete("/profile-picture")
+def delete_profile_picture(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+
+    if current_user.profile_picture:
+        old_filename = Path(current_user.profile_picture).name
+        old_file_path = PROFILE_UPLOAD_DIR / old_filename
+        try:
+            if old_file_path.is_file():
+                old_file_path.unlink()
+        except Exception:
+            pass
+
+        current_user.profile_picture = None
+        db.commit()
+        db.refresh(current_user)
+
+    return {
+        "status": "success",
+        "message": "Profile picture removed successfully."
     }
 
 

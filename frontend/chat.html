@@ -14,7 +14,7 @@
 
     <div class="app-container">
 
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
 
             <div class="brand">
                 <div class="logo">L</div>
@@ -32,7 +32,15 @@
             <div id="conversation-list" class="conversation-list"></div>
 
             <div class="sidebar-bottom">
-                <div id="user-display" class="user-display"></div>
+                <div class="user-profile-row" id="user-profile-btn" title="View & edit profile picture">
+                    <div class="user-avatar-badge" id="sidebar-user-avatar">
+                        <span id="sidebar-user-initials">U</span>
+                    </div>
+                    <div class="user-profile-info">
+                        <div id="user-display" class="user-display"></div>
+                        <small class="user-subtext">Profile & photo</small>
+                    </div>
+                </div>
                 <button id="logout-btn" class="logout-btn">Log out</button>
                 <span>LEO AI</span>
                 <small>Local development version</small>
@@ -40,9 +48,15 @@
 
         </aside>
 
+        <div id="sidebar-backdrop" class="sidebar-backdrop"></div>
+
         <main class="main-content">
 
             <header class="topbar">
+
+                <button id="sidebar-toggle" class="sidebar-toggle" aria-label="Toggle navigation" title="Toggle sidebar">
+                    ☰
+                </button>
 
                 <h3>LEO Assistant</h3>
 
@@ -122,6 +136,45 @@
 
         </main>
 
+    </div>
+
+    <!-- PROFILE PICTURE & SETTINGS MODAL -->
+    <div id="profile-modal" class="modal-backdrop">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>User Profile</h3>
+                <button id="close-profile-modal" class="modal-close-btn" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="profile-pic-section">
+                    <div class="profile-pic-preview-wrapper">
+                        <div id="profile-avatar-large" class="profile-avatar-large">
+                            <span id="profile-initials-large">U</span>
+                        </div>
+                    </div>
+                    <div class="profile-pic-controls">
+                        <label for="profile-file-input" class="profile-btn btn-choose">
+                            📷 Choose Picture
+                        </label>
+                        <input type="file" id="profile-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;">
+                        <button id="profile-save-btn" class="profile-btn btn-save" style="display: none;">Save Picture</button>
+                        <button id="profile-delete-btn" class="profile-btn btn-delete" style="display: none;">Remove Picture</button>
+                    </div>
+                    <p id="profile-modal-msg" class="profile-modal-msg"></p>
+                    <small class="profile-pic-hint">Supported: JPEG, PNG, WebP (Max 5MB)</small>
+                </div>
+                <div class="profile-details-fields">
+                    <div class="profile-field-row">
+                        <span class="profile-field-label">Full Name:</span>
+                        <span id="profile-name-val" class="profile-field-val"></span>
+                    </div>
+                    <div class="profile-field-row">
+                        <span class="profile-field-label">Email:</span>
+                        <span id="profile-email-val" class="profile-field-val"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="app.js"></script>

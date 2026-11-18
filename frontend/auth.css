@@ -149,6 +149,19 @@ body {
     text-align: center;
     color: #ff8585;
     min-height: 16px;
+    transition: color 0.2s ease;
+}
+
+.auth-message.success {
+    color: #4ade80;
+}
+
+.auth-message.error {
+    color: #ff8585;
+}
+
+.auth-message.info {
+    color: #93c5fd;
 }
 
 .auth-footer {
@@ -162,56 +175,4 @@ body {
     .auth-card {
         padding: 25px 20px;
     }
-}
-
-/* WELCOME PAGE + AUTH PAGE LAYOUT FIX */
-
-* {
-    box-sizing: border-box;
-}
-
-body {
-    min-height: 100vh;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: #212121;
-    color: white;
-    font-family: Arial, sans-serif;
-}
-
-.auth-container {
-    width: min(420px, 90%);
-    padding: 40px;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 18px;
-    background: #2b2b2b;
-    border: 1px solid #444;
-    border-radius: 16px;
-}
-
-.auth-container h1,
-.auth-container p {
-    text-align: center;
-    margin: 0;
-}
-
-.auth-button {
-    display: block;
-    width: 100%;
-    padding: 14px;
-    text-align: center;
-    text-decoration: none;
-    background: #ffffff;
-    color: #171717;
-    border-radius: 8px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.auth-button:hover {
-    background: #dddddd;
 }
